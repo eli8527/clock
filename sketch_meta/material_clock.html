@@ -18,11 +18,15 @@ body {
     <button type="button" onclick="rotate()">Rotate</button>
     <button type="button" onclick="unrotate()">Random Rotate</button>
     <button type="button" onclick="randomize()">Randomize</button>
+    <button type="button" onclick="save()">Randomize and Download</button>
+    <button type="button" onclick="run()">Start Saving</button>
+    <button type="button" onclick="stop()">Stop Saving</button>
   </div>
 
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="d3-save-svg.min.js"></script>
 <script>
 let colors = [
   "#c62828",
@@ -80,8 +84,8 @@ class Line {
     if (this.shouldRotate) {
       this.rotation += 6;
     }
-    console.log(this.sound);
-    this.sound.play();
+
+    // this.sound.play();
     this.e.transition()
       .duration(this.tweenTime)
       .ease(d3.easeCubicInOut)
@@ -139,14 +143,18 @@ m.update();
 h.randomize();
 h.update();
 
-let t = 1000;
+let t = 500;
 
+let canSave = false;
+let savei = 0;
 // s.setTweenTime(t - 100);
 // m.setTweenTime(t * 60 - 100);
 // h.setTweenTime(t * 60 * 60 - 100);
 let runnerS = setInterval(() => {
   s.randomize();
   s.update();
+  if (canSave)
+    jSave();
 }, t);
 
 let runnerM = setInterval(() => {
@@ -181,6 +189,31 @@ randomize = () => {
   h.update();
 }
 
+save = () => {
+  randomize();
+
+  let config = {
+    filename: 'clock',
+  }
+  d3_save_svg.save(d3.select('svg').node(), config);
+};
+
+jSave = () => {
+  let config = {
+    filename: `clock ${savei}`,
+  }
+  savei++;
+  d3_save_svg.save(d3.select('svg').node(), config);
+}
+
+run = () => {
+  canSave = true;
+}
+
+stop = () => {
+  canSave = false;
+}
+// stop();
 rotate();
 </script>
 </html>
