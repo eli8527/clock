@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Meta Sketch</title>
+<style>
+body {
+  text-align: center;
+}
+</style>
+</head>
+<body>
+  <svg height="400" width="400">
+    <line id="second" x1="200" y1="200" x2="200" y2="150" style=""></line>
+    <line id="minute" x1="200" y1="200" x2="200" y2="140" style=""></line>
+    <line id="hour" x1="200" y1="200" x2="200" y2="130" style=""></line>
+  </svg>
+  <div id="controls">
+    <button type="button" onclick="rotate()">Rotate</button>
+    <button type="button" onclick="unrotate()">Random Rotate</button>
+    <button type="button" onclick="randomize()">Randomize</button>
+  </div>
+
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+class Line {
+  constructor(element) {
+    this.e = d3.select(element);
+    this.e.style('transform-origin', '200px 200px');
+    this.tweenTime = 500;
+
+    this.stroke = 'black';
+    this.strokeWidth = 10;
+    this.opacity = 0.5;
+    this.l = 100;
+
+    this.rotation = 90;
+    this.strokeLinecap = 'round';
+    this.update();
+
+    this.shouldRotate = false;
+    this.rotate = 6;
+
+    this.lBounds = [1, 100];
+  };
+
+  setTweenTime(t) {
+    this.tweenTime = t;
+  };
+
+  update() {
+    if (this.shouldRotate) {
+      this.rotation += 6;
+    }
+
+    this.e.transition()
+      .duration(this.tweenTime)
+      .ease(d3.easeCubicInOut)
+      .attr('stroke-width', this.strokeWidth)
+      .style('opacity', this.opacity)
+      .style('stroke', this.stroke)
+      .attr('stroke-linecap', this.strokeLinecap)
+      .attr('y1', 200 - this.l/2)
+      .attr('y2', 200 + this.l/2)
+      .style('transform', `rotate(${this.rotation}deg)`);
+  }
+
+  randomize() {
+    this.strokeWidth = (Math.random() * 20) + 1;
+    this.opacity = Math.random() + 0.25;
+    this.l = d3.randomUniform(this.lBounds[0], this.lBounds[1])();
+
+    if (!this.shouldRotate) {
+      this.rotation = Math.random()*360;
+    }
+
+    let linecaps = ['square', 'round'];
+    this.strokeLinecap = linecaps[Math.floor(Math.random() * 2)];
+  }
+
+  setLengthBounds(l1, l2) {
+    this.lBounds = [l1, l2];
+  }
+  enableRotate(deg) {
+    this.shouldRotate = true;
+    this.rotate = deg;
+  }
+
+  disableRotate() {
+    this.shouldRotate = false;
+  }
+};
+
+let s = new Line('#second');
+s.setLengthBounds(175, 200);
+let m = new Line('#minute');
+m.setLengthBounds(100, 175);
+let h = new Line('#hour');
+h.setLengthBounds(50, 100);
+
+s.randomize();
+s.update();
+
+m.randomize();
+m.update();
+
+h.randomize();
+h.update();
+
+let t = 500;
+
+// s.setTweenTime(t - 100);
+// m.setTweenTime(t * 60 - 100);
+// h.setTweenTime(t * 60 * 60 - 100);
+let runnerS = setInterval(() => {
+  s.randomize();
+  s.update();
+}, t);
+
+let runnerM = setInterval(() => {
+  m.randomize();
+  m.update();
+}, t * 60);
+
+let runnerH = setInterval(() => {
+  h.randomize();
+  h.update();
+}, t * 60 * 60);
+
+
+rotate = () => {
+  s.enableRotate(6);
+  m.enableRotate(6);
+  h.enableRotate(6);
+}
+
+unrotate = () => {
+  s.disableRotate();
+  m.disableRotate();
+  h.disableRotate();
+}
+
+randomize = () => {
+  s.randomize();
+  s.update();
+  m.randomize();
+  m.update();
+  h.randomize();
+  h.update();
+}
+
+rotate();
+</script>
+</html>

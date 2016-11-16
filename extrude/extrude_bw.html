@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Evolve</title>
+<style>
+body {
+  display: flex;
+  height: 100%;
+}
+#watchCanvas {
+  background: black;
+}
+#crown {
+  width: 20px;
+  height: 100px;
+  overflow-y: scroll;
+  background: gray;
+  /*padding-left: 20px;*/
+}
+
+#digitalCrown {
+  height: 10000px;
+}
+</style>
+</head>
+<body>
+<canvas id="watchCanvas" width="312" height="390"></canvas>
+<div id="crown">
+<div id="digitalCrown">
+
+</div>
+</div>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script>
+let width = 312;
+let height = 390;
+
+let c = document.getElementById('watchCanvas');
+let ctx = c.getContext('2d');
+let t = 36600;
+let oldT = t;
+
+let midX = width / 2;
+let midY = height / 2;
+
+let drawHand = (strokeWidth, length, degree, color) => {
+  ctx.save();
+  ctx.beginPath();
+  ctx.lineWidth = '' + strokeWidth;
+  ctx.strokeStyle = color;
+  ctx.translate(midX, midY);
+  ctx.rotate((degree - 90) * Math.PI / 180);
+  ctx.moveTo(0, 0);
+  ctx.lineTo(length, 0);
+  ctx.stroke();
+  ctx.restore();
+};
+
+let drawSecond = () => {
+  // second
+  let s = t % 60;
+  let sTransform = s * 360 / 60;
+  let r = sTransform;
+  let opacity = 0.25;
+  for (let i = 0; i < 360; i++) {
+    if (r === sTransform)
+      drawHand(2, 130, r, `rgba(255, 255, 255, 1)`);
+    drawHand(2, 130, r, `rgba(255, 255, 255, ${opacity})`);
+    r--;
+    opacity -= 1 / 360 / 4;
+  }
+};
+
+let drawMinute = () => {
+  // minute
+  let m = t % 3600;
+  let mTransform = m * 360 / 3600;
+  let r = mTransform;
+  let opacity = 0.25;
+  for (let i = 0; i < 360; i++) {
+    if (r === mTransform)
+      drawHand(2, 110, r, `rgba(255, 255, 255, 1)`);
+    drawHand(2, 110, r, `rgba(255, 255, 255, ${opacity})`);
+    r--;
+    opacity -= 1 / 360 / 4;
+  }
+};
+
+let drawHour = () => {
+  // minute
+  let m = t % 43200;
+  let mTransform = m * 360 / 43200;
+  let r = mTransform;
+  let opacity = 0.25;
+  for (let i = 0; i < 360; i++) {
+    if (r === mTransform)
+      drawHand(2, 60, r, `rgba(255, 255, 255, 1)`);
+    drawHand(2, 60, r, `rgba(255, 255, 255, ${opacity})`);
+    r--;
+    opacity -= 1 / 360 / 4;
+  }
+};
+
+let draw = () => {
+  ctx.clearRect(0, 0, width, height);
+
+  drawSecond();
+  drawMinute();
+  drawHour();
+};
+
+let timeRunner = setInterval(() => {
+  oldT = t;
+  t += .01;
+}, 10);
+
+// draw();
+setInterval(() => {
+  draw();
+}, 100);
+
+$('#crown').scroll(() => {
+  let scroll = $('#crown').scrollTop();
+  console.log(scroll);
+  if (scroll > 0) {
+    clearInterval(timeRunner);
+    t = oldT - .01 * scroll;
+  }
+
+  if (scroll === 0) {
+    timeRunner = setInterval(() => {
+      t += .01;
+      oldT = t;
+    }, 10);
+  }
+});
+</script>
+
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8>
+  <title>3D Time</title>
+  <style>
+  body { margin: 0; }
+  canvas { width: 100%; height: 100% }
+  </style>
+</head>
+<body>
+  <script src="js/three.js"></script>
+  <script src="js/OrbitControls.js"></script>
+  <script>
+  let scene = new THREE.Scene();
+  let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+  let renderer = new THREE.WebGLRenderer();
+  // renderer.setFaceCulling(false);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  let controls = new THREE.OrbitControls(camera, renderer.domElement);
+  let T = 120;
+  let secondRotate;
+  let minuteRotate;
+  let hourRotate;
+
+  let update = (t) => {
+    let seconds = (u, v) => {
+      let factor = 60;
+      let twoPI = 2 * Math.PI;
+      let newV = v * (t / factor) * twoPI;
+      let h = (v / twoPI / 60) * t;
+
+      let vec = new THREE.Vector3(u * Math.sin(newV), u * Math.cos(newV), h);
+      return vec;
+    };
+
+    let geometryS = new THREE.ParametricBufferGeometry(seconds, 250, 250);
+    let materialS = new THREE.MeshPhongMaterial({
+      color: 0xffffff,
+      specular: 0x111111,
+      opacity: 0.5,
+      shininess: 30,
+      side: THREE.DoubleSide,
+      transparent: true,
+    });
+
+    secondRotate = new THREE.Mesh(geometryS, materialS);
+    scene.add(secondRotate);
+
+    let minutes = (u, v) => {
+      let factor = 60 * 60;
+      let twoPI = 2 * Math.PI;
+      let newV = v * (t / factor) * twoPI;
+      let h = (v / twoPI / 60) * t;
+
+      let vec = new THREE.Vector3(.8 * u * Math.sin(newV), .8 * u * Math.cos(newV), h);
+      return vec;
+    };
+
+    let geometryM = new THREE.ParametricBufferGeometry(minutes, 250, 250);
+    let materialM = new THREE.MeshPhongMaterial({
+      color: 0xaaaaaa,
+      specular: 0x111111,
+      opacity: 0.5,
+      shininess: 30,
+      side: THREE.DoubleSide,
+      transparent: true,
+    });
+
+    minuteRotate = new THREE.Mesh(geometryM, materialM);
+    scene.add(minuteRotate);
+
+    let hours = (u, v) => {
+      let factor = 60 * 60 * 12;
+      let twoPI = 2 * Math.PI;
+      let newV = v * (t / factor) * twoPI;
+      let h = (v / twoPI / 60) * t;
+
+      let vec = new THREE.Vector3(.4 * u * Math.sin(newV), .4 * u * Math.cos(newV), h);
+      return vec;
+    };
+
+    let geometryH = new THREE.ParametricBufferGeometry(hours, 250, 250);
+    let materialH = new THREE.MeshPhongMaterial({
+      color: 0x666666,
+      specular: 0x111111,
+      opacity: 0.5,
+      shininess: 30,
+      side: THREE.DoubleSide,
+      transparent: true,
+    });
+
+    hourRotate = new THREE.Mesh(geometryH, materialH);
+    scene.add(hourRotate);
+  };
+
+  update(T);
+
+  let light = new THREE.DirectionalLight(0xffffff);
+  light.position.set(0, 0, 5).normalize();
+  scene.add(light);
+
+  let light2 = new THREE.DirectionalLight(0xffffff);
+  light2.position.set(0, 0, -5).normalize();
+  scene.add(light2);
+
+  camera.position.z = 5;
+  // camera.position.x = 1;
+
+  // let light = new THREE.AmbientLight( 0x404040 ); // soft white light
+  // scene.add( light );
+
+  let render = () => {
+    T += 1 / 60;
+    scene.remove(secondRotate);
+    scene.remove(minuteRotate);
+    scene.remove(hourRotate);
+    update(T);
+
+    // cube.position.x += 0.01;
+    requestAnimationFrame(render);
+    controls.update();
+    renderer.render(scene, camera);
+  };
+
+  render();
+  </script>
+</body>
+</html>
