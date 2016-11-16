@@ -10,15 +10,15 @@ body {
 </head>
 <body>
   <svg height="400" width="400">
-    <line id="second" x1="200" y1="200" x2="200" y2="150" style=""></line>
-    <line id="minute" x1="200" y1="200" x2="200" y2="140" style=""></line>
-    <line id="hour" x1="200" y1="200" x2="200" y2="130" style=""></line>
+    <line id="second" x1="200" y1="200" x2="200" y2="200" style=""></line>
+    <line id="minute" x1="200" y1="200" x2="200" y2="200" style=""></line>
+    <line id="hour" x1="200" y1="200" x2="200" y2="200" style=""></line>
   </svg>
   <div id="controls">
     <button type="button" onclick="rotate()">Rotate</button>
     <button type="button" onclick="unrotate()">Random Rotate</button>
     <button type="button" onclick="randomize()">Randomize</button>
-    <button type="button" onclick="save()">Randomize and Download</button>
+    <button type="button" onclick="save()">Download</button>
     <button type="button" onclick="run()">Start Saving</button>
     <button type="button" onclick="stop()">Stop Saving</button>
   </div>
@@ -143,7 +143,7 @@ m.update();
 h.randomize();
 h.update();
 
-let t = 500;
+let t = 1000;
 
 let canSave = false;
 let savei = 0;
@@ -190,7 +190,7 @@ randomize = () => {
 }
 
 save = () => {
-  randomize();
+  // randomize();
 
   let config = {
     filename: 'clock',
