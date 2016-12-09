@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Meta Sketch</title>
+<style>
+body {
+  background-color: black;
+  /*text-align: center;*/
+}
+#watch {
+  top: 90px;
+  background-image: url("bezel2.png");
+  background-repeat: no-repeat;
+  width: 552px;
+  height: 630px;
+  margin: 0 auto;
+  position: relative;
+}
+#face {
+  position: absolute;
+  left: 120px;
+  top: 120px;
+}
+#click {
+  /*background-color: green;*/
+  width: 40px;
+  height: 150px;
+
+  position: absolute;
+  left: 490px;
+  top: 320px;
+}
+
+#touch {
+  position: fixed;
+  top: 0px;
+  left: 30px;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+  <div id="watch">
+    <svg height="390" width="312" id="face">
+      <rect x="0" y="0" width="312" height="390" style="fill: black;"></rect>
+      <line id="second" y1="195" x1="156" y2="195" x2="156" style=""></line>
+      <line id="minute" y1="195" x1="156" y2="195" x2="156" style=""></line>
+      <line id="hour" y1="195" x1="156" y2="195" x2="156" style=""></line>
+    </svg>
+    <div id="click">
+    </div>
+  </div>
+    <img src="touch.png" height="100px" id="touch"/>
+
+  <!-- <div id="controls">
+    <button type="button" onclick="rotate()">Rotate</button>
+    <button type="button" onclick="unrotate()">Random Rotate</button>
+    <button type="button" onclick="randomize()">Randomize</button>
+    <button type="button" onclick="save()">Download</button>
+    <button type="button" onclick="run()">Start Saving</button>
+    <button type="button" onclick="stop()">Stop Saving</button>
+  </div> -->
+
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="d3-save-svg.min.js"></script>
+<script>
+ document.body.style.cursor = 'none';
+let colors = [
+  "#c62828",
+  "#ad1457",
+  "#6a1b9a",
+  "#4527a0",
+  "#283593",
+  "#1565c0",
+  "#0277bd",
+  "#00838f",
+  "#00695c",
+  "#2e7d32",
+  "#558b2f",
+  "#9e9d24",
+  "#f9a825",
+  "#ff8f00",
+  "#ef6c00",
+  "#d84315",
+  "#4e342e",
+  "#424242",
+  "#37474f"
+];
+
+class Line {
+  constructor(element) {
+    this.e = d3.select(element);
+    this.e.style('transform-origin', '156px 195px');
+    this.tweenTime = 500;
+
+    this.stroke = 'black';
+    this.strokeWidth = 10;
+    this.opacity = 1.0;
+    this.l = 100;
+
+    this.rotation = 0;
+    this.strokeLinecap = 'square';
+
+    this.shouldRotate = false;
+    this.rotate = 6;
+
+    this.originY = 195;
+
+    this.lBounds = [1, 100];
+    this.sBounds = [1, 20];
+
+    this.sound = new Audio('celesta.wav');
+
+    this.update();
+  };
+
+  setRotate(r) {
+    this.rotation = r;
+  }
+
+  setTweenTime(t) {
+    this.tweenTime = t;
+  };
+
+  update() {
+    if (this.shouldRotate) {
+      this.rotation += this.rotate;
+    }
+
+    this.sound.play();
+    this.e.transition()
+      .duration(this.tweenTime)
+      .ease(d3.easeCubicInOut)
+      .attr('stroke-width', this.strokeWidth)
+      .style('stroke', this.stroke)
+      // .style('opacity', this.opacity)
+      .style('stroke', this.stroke)
+      .attr('stroke-linecap', this.strokeLinecap)
+      .attr('y1', this.originY - this.l/2)
+      .attr('y2', this.originY + this.l/2)
+      .style('transform', `rotate(${this.rotation}deg)`);
+  }
+
+  randomize() {
+    this.stroke = colors[Math.floor(Math.random()*colors.length)]
+    this.originY = d3.randomUniform(150, 270)();
+    this.strokeWidth = d3.randomUniform(this.sBounds[0], this.sBounds[1])();
+    this.opacity = Math.random() + 0.20;
+    this.l = d3.randomUniform(this.lBounds[0], this.lBounds[1])();
+
+    if (!this.shouldRotate) {
+      this.rotation = Math.random()*360;
+    }
+    //
+    // let linecaps = ['square', 'round'];
+    // this.strokeLinecap = linecaps[Math.floor(Math.random() * 2)];
+
+  }
+
+  setLengthBounds(l1, l2) {
+    this.lBounds = [l1, l2];
+  }
+
+  setStrokeBounds(s1, s2) {
+    this.sBounds = [s1, s2];
+  }
+  enableRotate(deg) {
+    this.shouldRotate = true;
+    this.rotate = deg;
+  }
+
+  disableRotate() {
+    this.shouldRotate = false;
+  }
+};
+
+let s = new Line('#second');
+s.setLengthBounds(100, 150);
+s.setStrokeBounds(1, 30);
+let m = new Line('#minute');
+m.setLengthBounds(80, 130);
+let h = new Line('#hour');
+h.setLengthBounds(30, 80);
+
+s.randomize();
+s.setRotate(180);
+s.update();
+
+m.randomize();
+m.update();
+
+h.randomize();
+h.update();
+
+let t = 1000;
+
+let canSave = false;
+let savei = 0;
+// s.setTweenTime(t - 100);
+// m.setTweenTime(t * 60 - 100);
+// h.setTweenTime(t * 60 * 60 - 100);
+let random = true;
+let runnerS = setInterval(() => {
+  if (random)
+    s.randomize();
+  s.update();
+  if (canSave)
+    jSave();
+}, t);
+
+let runnerM = setInterval(() => {
+  if (random)
+    m.randomize();
+  m.update();
+}, t * 60);
+
+let runnerH = setInterval(() => {
+  if (random)
+    h.randomize();
+  h.update();
+}, t * 60 * 60);
+
+
+rotate = (deg) => {
+  s.enableRotate(deg);
+  m.enableRotate(deg);
+  h.enableRotate(deg);
+}
+
+unrotate = () => {
+  s.disableRotate();
+  m.disableRotate();
+  h.disableRotate();
+}
+
+randomize = () => {
+  rotate(0);
+  s.randomize();
+  s.update();
+  m.randomize();
+  m.update();
+  h.randomize();
+  h.update();
+  rotate(6);
+}
+
+$('#face').on('click', () => {
+  random = !random;
+});
+
+$('#click').on('click', () => {
+  randomize();
+});
+
+$('body').mousemove((e) => {
+  let mL = e.clientX - 50;
+  let mT = e.clientY - 50;
+
+  $('#touch').offset({left: mL, top: mT});
+})
+save = () => {
+  // randomize();
+
+  let config = {
+    filename: 'clock',
+  }
+  d3_save_svg.save(d3.select('svg').node(), config);
+};
+
+jSave = () => {
+  let config = {
+    filename: `clock ${savei}`,
+  }
+  savei++;
+  d3_save_svg.save(d3.select('svg').node(), config);
+}
+
+run = () => {
+  canSave = true;
+}
+
+stop = () => {
+  canSave = false;
+}
+// stop();
+rotate(6);
+</script>
+</html>

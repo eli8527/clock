@@ -2,7 +2,7 @@ from PIL import Image
 import PIL
 # numFrames = 118
 frameDims = (256, 256)
-canvasDims = (16, 20)
+canvasDims = (18, 18)
 
 outImg = Image.new("RGBA", ((canvasDims[0]-1) * frameDims[0], (canvasDims[1]-1) * frameDims[1]))
 
@@ -22,4 +22,4 @@ for x in xrange(0, canvasDims[0]-1):
     img = img.resize((256, 256), PIL.Image.ANTIALIAS)
     outImg.paste(img, box=(x * frameDims[0], y * frameDims[1]))
 
-outImg.save("comp.png")
+outImg.save("comp_sq.png")
